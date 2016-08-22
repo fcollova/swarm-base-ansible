@@ -1,0 +1,32 @@
+---
+- name: Configure etcd service
+  sudo: yes
+  template: src="etcd.service.j2"
+            dest="/etc/systemd/system/etcd.service"
+            owner=root
+            group=root
+            mode=0644
+  when: inventory_hostname in groups.etcd_server
+  notify:
+    - reload systemd
+    - restart etcd
+
+- name: Configure docker service
+  sudo: yes
+  template: src="docker.service.j2"
+            dest="/etc/systemd/system/docker.service"
+            owner=root
+            group=root
+            mode=0644
+  notify:
+    - reload systemd
+    - restart docker
+
+- name: Enable etcd service
+  sudo: yes
+  service: name=etcd state=started enabled=yes
+  when: inventory_hostname in groups.etcd_server
+
+- name: Enable and start docker service
+  sudo: yes
+  service: name=docker state=started enabled=yes

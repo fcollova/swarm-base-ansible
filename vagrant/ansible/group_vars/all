@@ -1,0 +1,2 @@
+# By default CoreOS user is core
+ansible_ssh_user: vagrant

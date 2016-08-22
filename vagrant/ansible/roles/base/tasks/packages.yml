@@ -1,0 +1,12 @@
+---
+
+- name: Update all system packages
+  apt: upgrade=dist
+  become: true
+  when: '"{{ system_update }}" == true'
+  tags: [packages]
+
+- name: install python pip
+  apt: pkg=python-pip 
+  become: true
+  tags: [packages]

@@ -1,0 +1,43 @@
+---
+
+- name: Install docker dependencies
+  apt: pkg={{ item }} state=installed
+  with_items:
+    - ca-certificates
+    - apt-transport-https
+  become: true
+  tags: [docker]
+
+- name: Debian add Docker repository and update apt cache
+  apt_repository:
+    repo: deb https://apt.dockerproject.org/repo ubuntu-trusty main
+    update_cache: yes
+    state: present
+  become: true
+  tags: [docker]
+
+- name: Install docker
+  apt:
+   pkg: docker-engine
+   state: latest
+   force: yes
+  become: true
+  tags: [docker]
+
+- name: Add vagrant user to the docker group
+  user:
+    name: vagrant
+    group: docker
+  register: user_result
+  become: true
+  tags: [docker]
+
+- name: Restart Docker service
+  service: name=docker state=restarted
+  become: true
+  when: user_result|changed
+  tags: [docker]
+
+#- name: Wait for docker to come up
+#s  wait_for: port=8000 delay=10
+
