@@ -32,10 +32,12 @@
   become: true
   tags: [docker]
 
-- name: Restart Docker service
-  service: name=docker state=restarted
+- name: Add docker default file
+  template: src=templates/docker_defaults.j2 dest=/etc/default/docker mode=0640 owner=root group=root
+  notify:
+  - Restart docker
+  - Wait for docker port
   become: true
-  when: user_result|changed
   tags: [docker]
 
 #- name: Wait for docker to come up

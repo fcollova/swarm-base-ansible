@@ -3,6 +3,7 @@
   roles:
   - base
   - docker
+  - flocker
 
 - hosts: master
   roles:

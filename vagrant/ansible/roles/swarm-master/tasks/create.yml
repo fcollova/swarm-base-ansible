@@ -1,25 +1,18 @@
 ---
 
 - name: Initiate swarm cluster
-  shell: docker swarm init --advertise-addr "{{ groups['master'][0] }}" --listen-addr "{{ groups['master'][0] }}":2377
-  #args:
-  #  creates: /home/vagrant/.initiated
+  shell: /usr/bin/docker swarm init --advertise-addr "{{ groups['master'][0] }}" --listen-addr "{{ groups['master'][0] }}":2377
   when:  "'{{ groups['master'][0] }}' == '{{ ansible_eth1['ipv4']['address'] }}'"
-  register: init
+  become: true
   ignore_errors: true
+  tags: [swarm-master]
 
 - name: get cluster token
   shell: docker swarm join-token -q worker
   register: token
+  become: true
+  tags: [swarm-master]
 
 - name: save cluster token
   set_fact: token="{{ token.stdout }}"
-
-#- name: Retrieve swarm cluster token
-#  shell: docker swarm join-token -q worker
-#  register: token
-#  when: init.changed
-
-#- name: Join other masters to cluster
-#  shell: docker swarm join --manager --listen-addr "{{ ansible }}":2377 "{{ master_private_ip }}":2377
-#  when: token.changed
+  tags: [swarm-master]

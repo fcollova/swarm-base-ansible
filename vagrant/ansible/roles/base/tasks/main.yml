@@ -1,8 +1,4 @@
 ---
 
-# Prepare node environment
-#- include: prepare.yml
-# Install binaries
 - include: packages.yml
-# Configure services
-#- include: services.yml
+

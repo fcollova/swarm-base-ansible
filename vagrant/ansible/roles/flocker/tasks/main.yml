@@ -1,0 +1,24 @@
+---
+
+- name: Install flocker dependencies
+  apt: pkg={{ item }} state=latest
+  with_items:
+  - apt-transport-https
+  - software-properties-common
+
+- name: Add flocker repo
+  apt_repository: repo='deb https://clusterhq-archive.s3.amazonaws.com/ubuntu/14.04/$(ARCH) /'
+  become: true
+
+- name: Add buildbot file
+  copy: src=buildbot-700 dest=/etc/apt/preferences.d/buildbot-700
+  become: true
+
+- name: Install flocker-cli
+  apt:
+    pkg: clusterhq-flocker-cli
+    force: yes
+    update_cache: yes
+    state: latest
+  become: true
+

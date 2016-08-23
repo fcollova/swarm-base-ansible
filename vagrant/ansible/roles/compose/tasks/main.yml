@@ -3,4 +3,4 @@
 - name: Install compose via pip
   pip: name=docker-compose
   become: true
-  tags: [compose] 
+  tags: [compose]

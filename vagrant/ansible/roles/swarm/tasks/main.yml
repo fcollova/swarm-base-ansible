@@ -1,3 +1,7 @@
 ---
-- name: Join master
+
+- name: Join swarm master
   shell: docker swarm join --token "{{ hostvars[groups['master'][0]]['token'] }}" "{{ groups['master'][0] }}":2377
+  become: true
+  ignore_errors: true
+  tags: [swarm]

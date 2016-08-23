@@ -4,27 +4,9 @@ $master_instances=1
 # Number of minions
 $minion_instances=4
 
-# To automatically replace the discovery token on 'vagrant up', uncomment
-# the lines below:
-#
-#if File.exists?('user-data') && ARGV[0].eql?('up')
-#  require 'open-uri'
-#  require 'yaml'
-#
-#  token = open($new_discovery_url).read
-#
-#  data = YAML.load(IO.readlines('user-data')[1..-1].join)
-#  if data['coreos'].key? 'etcd'
-#    data['coreos']['etcd']['discovery'] = token
-#  end
-#  if data['coreos'].key? 'etcd2'
-#    data['coreos']['etcd2']['discovery'] = token
-#  end
-#
-#  yaml = YAML.dump(data)
-#  File.open('user-data', 'w') { |file| file.write("#cloud-config\n\n#{yaml}") }
-#end
-#
+# Box settings
+$update_channel = "main"
+$image_version = "trusty"
 
 
 # Change basename of the VM
@@ -55,7 +37,7 @@ $vm_minion_cpus = 2
 # $shared_folders = {'/path/on/host' => '/path/on/guest', '/home/foo/app' => '/app'}
 # or, to map host folders to guest folders of the same name,
 # $shared_folders = Hash[*['/home/foo/app1', '/home/foo/app2'].map{|d| [d, d]}.flatten]
-$shared_folders = {'../apps' => '/apps'}
+$shared_folders = {'apps' => '/apps'}
 
 # Enable port forwarding from guest(s) to host machine, syntax is: { 80 => 8080 }, auto correction is enabled by default.
 #$forwarded_ports = {}

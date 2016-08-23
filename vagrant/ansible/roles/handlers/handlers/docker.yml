@@ -1,0 +1,13 @@
+---
+
+- name: Restart docker
+  service: name=docker state=restarted
+  become: true
+
+- name: Wait for docker port
+  local_action:
+    module: wait_for
+      host={{ inventory_hostname }}
+      port=2375
+      delay=1
+      timeout=30
