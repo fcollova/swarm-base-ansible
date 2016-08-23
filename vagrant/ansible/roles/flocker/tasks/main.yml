@@ -14,11 +14,24 @@
   copy: src=buildbot-700 dest=/etc/apt/preferences.d/buildbot-700
   become: true
 
-- name: Install flocker-cli
-  apt:
-    pkg: clusterhq-flocker-cli
-    force: yes
-    update_cache: yes
-    state: latest
+- name: Install flocker-packages
+  apt: pkg={{ item }} state=latest force=yes update_cache=yes
+  with_items:
+  - clusterhq-flocker-cli
+  - clusterhq-flocker-node
+  - clusterhq-flocker-docker-plugin
   become: true
+
+- name: Create flocker config directory
+  file: path=/etc/flocker state=directory
+  become: true
+
+- find: paths=/etc/flocker/ patterns="*.*"
+  register: dir_files
+
+- name: generate flocker ca root certs
+  command: chdir=/etc/flocker flocker-ca initialize dev-cluster
+  when: dir_files.matched|int == 0
+  become: true
+
 
