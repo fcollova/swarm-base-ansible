@@ -8,6 +8,7 @@
 - hosts: master
   roles:
   - compose
+  - flocker-control
 
 - hosts: swarm-master
   roles:

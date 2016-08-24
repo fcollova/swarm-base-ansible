@@ -1,0 +1,57 @@
+---
+
+- find: path="/etc/flocker" patterns="*control-*"
+  register: cert_files
+  become: true
+
+- name: generate flocker control certs
+  command: chdir=/etc/flocker flocker-ca create-control-certificate "{{ inventory_hostname }}"
+  when: cert_files.matched|int == 0
+  register: created
+  become: true
+
+- name: Rename control cert file
+  shell: mv /etc/flocker/control-"{{ inventory_hostname }}".crt /etc/flocker/control-service.crt
+  when: created.changed
+  become: true
+
+- name: Rename control key file
+  shell: mv /etc/flocker/control-"{{ inventory_hostname }}".key /etc/flocker/control-service.key
+  when: created.changed
+  become: true
+
+- name: Change permission on control key file
+  shell: chmod 0600 /etc/flocker/control-service.key
+  become: true
+
+- find: paths="/etc/flocker" patterns="dev-client.*"
+  register: dev_client_certs
+  become: true
+
+- name: generate client api certs
+  command: chdir=/etc/flocker flocker-ca create-api-certificate dev-client
+  become: true
+  when: dev_client_certs.matched | int == 0
+
+- find: paths="/etc/flocker" patterns="plugin*"
+  register: plugin_certs
+  become: true
+
+- name: generate docker plugin certs
+  command: chdir=/etc/flocker flocker-ca create-api-certificate plugin
+  become: true
+  when: plugin_certs.matched | int == 0
+
+- name: Enable flocker control service
+  service:
+    name: flocker-control
+    enabled: yes
+    state: started
+  become: true
+
+- name: Add firewall rules for control service
+  ufw: rule=allow name={{ item }}
+  with_items:
+  - flocker-control-api
+  - flocker-control-agent
+  become: true

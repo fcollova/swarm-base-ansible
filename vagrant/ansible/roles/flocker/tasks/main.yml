@@ -5,6 +5,7 @@
   with_items:
   - apt-transport-https
   - software-properties-common
+  become: true
 
 - name: Add flocker repo
   apt_repository: repo='deb https://clusterhq-archive.s3.amazonaws.com/ubuntu/14.04/$(ARCH) /'
@@ -23,15 +24,68 @@
   become: true
 
 - name: Create flocker config directory
-  file: path=/etc/flocker state=directory
+  file: path=/etc/flocker state=directory mode=0700
   become: true
 
-- find: paths=/etc/flocker/ patterns="*.*"
+- find: paths="/etc/flocker" patterns="cluster.crt,cluster.key"
   register: dir_files
+  become: true
 
 - name: generate flocker ca root certs
   command: chdir=/etc/flocker flocker-ca initialize dev-cluster
   when: dir_files.matched|int == 0
   become: true
+
+- find: paths="/etc/flocker" patterns="[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" use_regex=True
+  register: node_certs
+  become: true
+
+- name: generate flocker node certs
+  command: chdir=/etc/flocker flocker-ca create-node-certificate
+  when: node_certs.matched|int == 0
+  become: true
+
+- find: paths="/etc/flocker" patterns="[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}.crt" use_regex=True
+  register: node_cert
+  become: true
+
+- find: paths="/etc/flocker" patterns="[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}.key" use_regex=True
+  register: node_key
+  become: true
+
+- name: Rename node cert
+  shell: mv "{{ node_cert.files[0]['path'] }}" /etc/flocker/node.crt
+  become: true
+
+- name: Rename node key
+  shell: mv "{{ node_key.files[0]['path'] }}" /etc/flocker/node.key
+  become: true
+
+- name: change node key permissions
+  shell: chmod 0600 /etc/flocker/node.key
+  become: true
+
+- name: Create loop dir for agents
+  file: path=/var/lib/flocker/loopback state=directory
+  become: true
+
+- name: Copy agent yaml from template
+  template: src=templates/agent.j2 dest=/etc/flocker/agent.yml
+  become: true
+
+- name: Enable agent services
+  service: name={{ item }} state=started enabled=true
+  with_items:
+  - flocker-dataset-agent
+  - flocker-container-agent
+  notify:
+  - restart_flocker_plugin
+  become: true
+
+- name: restart_flocker_plugin
+  service: name=flocker-docker-plugin state=restarted
+  become: true
+
+
 
 

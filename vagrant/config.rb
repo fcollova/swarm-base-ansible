@@ -2,7 +2,7 @@
 # Number of masters
 $master_instances=1
 # Number of minions
-$minion_instances=4
+$minion_instances=5
 
 # Box settings
 $update_channel = "main"

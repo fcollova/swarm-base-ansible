@@ -3,3 +3,4 @@
 - include: docker.yml
 - include: systemd.yml
 - include: swarm.yml
+- include: flocker.yml
